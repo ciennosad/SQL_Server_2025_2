@@ -25,7 +25,10 @@
 
 ## Nó có những loại nào? 
 
-- Hàm do người dùng tự viết trong SQL thường được chia thành ba loại chính. Đầu tiên là **hàm vô hướng (Scalar)**, nhận dữ liệu đầu vào và trả về duy nhất một giá trị, thích hợp để tính toán hoặc chuẩn hóa thông tin cho từng dòng. Thứ hai là **hàm trả về bảng (Table-Valued)**, cho kết quả là một tập dữ liệu dạng bảng có thể dùng trực tiếp trong mệnh đề `FROM` hoặc `JOIN`; loại này gồm dạng inline (chạy nhanh, viết gọn bằng một câu `SELECT`) và dạng nhiều câu lệnh (xử lý logic phức tạp hơn). Cuối cùng là **hàm tổng hợp (Aggregate)**, dùng để thống kê trên nhiều dòng và trả về một giá trị duy nhất, tuy ít phổ biến và khả năng hỗ trợ tùy thuộc vào từng hệ quản trị cơ sở dữ liệu.
+- Hàm do người dùng tự viết trong SQL thường được chia thành ba loại chính:
+- Đầu tiên là **hàm vô hướng (Scalar)**, nhận dữ liệu đầu vào và trả về duy nhất một giá trị, thích hợp để tính toán hoặc chuẩn hóa thông tin cho từng dòng.
+- Thứ hai là **hàm trả về bảng (Table-Valued)**, cho kết quả là một tập dữ liệu dạng bảng có thể dùng trực tiếp trong mệnh đề `FROM` hoặc `JOIN`; loại này gồm dạng inline (chạy nhanh, viết gọn bằng một câu `SELECT`) và dạng nhiều câu lệnh (xử lý logic phức tạp hơn).
+- Cuối cùng là **hàm tổng hợp (Aggregate)**, dùng để thống kê trên nhiều dòng và trả về một giá trị duy nhất, tuy ít phổ biến và khả năng hỗ trợ tùy thuộc vào từng hệ quản trị cơ sở dữ liệu.
 
 ## Mỗi loại thường được dùng khi nào? 
 
@@ -43,10 +46,17 @@
 ## 2.4 Table-Valued Function: Sách còn mượn được theo thể loại
 <img width="1915" height="1079" alt="image" src="https://github.com/user-attachments/assets/e803f1f7-8a5c-4234-8367-cfd9783b259b" />
 
-## 2.5: Multi-statement Table-Valued Function: Thống kế mượn sách độc giả\
+## 2.5: Multi-statement Table-Valued Function: Thống kế mượn sách độc giả
 <img width="1918" height="1073" alt="image" src="https://github.com/user-attachments/assets/2fc1cd1c-8b8f-4ec8-8597-b1bb024837ef" />
 
-## 
+## Phần 3: XÂY DỰNG STORRED PROCEDURE
+
+## 3.1 Một số SP trong SQL có sẵn: Một số SP có sẵn trong SQL và ví dụ SP, giải thích những SP đó
+<img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/fd2cd669-a1d5-4388-94f0-b34bf37656f4" />
+
+`Đây là một số SP và ví dụ có giải thích`
+
+## 3.2 Stored Procedure đơn giản để thực hiện các lệnh sau: `INSERT`, `UPDATE` và kiểm tra điều kiện
 
 
 
