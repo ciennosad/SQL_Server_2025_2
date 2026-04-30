@@ -58,6 +58,50 @@
 
 ## 3.2 Stored Procedure đơn giản để thực hiện các lệnh sau: `INSERT`, `UPDATE` và kiểm tra điều kiện
 
+<img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/1a0e3702-5054-4453-b5a4-8b805ea8d2ed" />
+
+`Hình ảnh dùng lệnh INSERT để thực hiện thêm dữ liệu vào bảng`
+ 
+## 3.3 Stored procedure sử dụng tham số `OUTPUT`: Tính tổng tiền phạt của độc giả
+
+<img width="1916" height="1077" alt="image" src="https://github.com/user-attachments/assets/da651677-334d-4d64-811f-9996c94db748" />
+
+`Hình ảnh dùng tham số OUTPUT để tính tổng tiền phạt của người mượn sách`
+## 3.4 Stored Procedure trả về Result Set: Báo cáo mượn sách
+
+<img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/ae37c652-f0ec-40d0-8ab4-e10994e5e6f6" />
+
+`Hình ảnh dòng code`
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/66e7e2ba-758b-472e-bfcd-cd565b0c988b" />
+
+`Hình ảnh kết quả chạy của dòng code trên`
+
+## Phần 4: TRIGGER VÀ XỬ LÝ LOGIC NGHIỆP VỤ
+
+## 4.1 Trigger tự động cập nhật: Cập nhật số lượng sách khi mượn/trả
+
+<img width="1910" height="1078" alt="image" src="https://github.com/user-attachments/assets/14a00fd0-e595-4c70-b56b-4454dddeef3c" />
+
+`Hình ảnh code`
+
+<img width="1918" height="1079" alt="image" src="https://github.com/user-attachments/assets/b00bd64a-d28a-45ba-8cef-f10a34edf72a" />
+
+`Hình ảnh kết quả trước khi mượn sách`
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/add04b53-5fa3-4096-840d-7ee31f07103b" />
+
+`Hình ảnh kết quả, số lượng sách ban đầu bảng A thay đổi dữ liệu bảng A, trigger tự động ở bảng B là cho mượn 1 quyển sách thì số lượng bảng A thay đổi  `
+
+## 4.2 Viết Trigger cho bảng A:
+
+- Khi `INSERT` thì cập nhật dữ liệu vào bảng B
+- 
+- Viết Trigger cho bảng B
+
+
+
+
 
 
 
