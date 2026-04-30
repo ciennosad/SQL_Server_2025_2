@@ -93,11 +93,27 @@
 
 `Hình ảnh kết quả, số lượng sách ban đầu bảng A thay đổi dữ liệu bảng A, trigger tự động ở bảng B là cho mượn 1 quyển sách thì số lượng bảng A thay đổi  `
 
-## 4.2 Viết Trigger cho bảng A:
+## 4.2 Viết Trigger cho bảng A:(sửa)
 
-- Khi `INSERT` thì cập nhật dữ liệu vào bảng B
-- 
-- Viết Trigger cho bảng B
+<img width="1919" height="1078" alt="image" src="https://github.com/user-attachments/assets/6c2f5e41-8962-4e97-b2a7-a9f4a965051d" />
+
+  `Thêm cột tổng lần mượn vào bảng DocGia đã có sẵn`
+
+  <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/8ae658e2-72c9-4e0a-8140-9c288b6ab8d9" />
+
+  `Cột `TongLanMuon` đã có trong bảng DocGia`
+
+- Viết Trigger cho bảng A:
+  
+<img width="1919" height="1075" alt="image" src="https://github.com/user-attachments/assets/b66e0daa-5d24-4a94-a9c1-feb3c40a9975" />
+
+`Hình ảnh code của Trigger A`
+
+- Viết Trigger cho bảng B:
+
+<img width="1915" height="1076" alt="image" src="https://github.com/user-attachments/assets/ef0a0adb-5676-4676-8b01-32fb55ebdfe1" />
+
+`Hình ảnh code của Trigger B`
 
 
 
