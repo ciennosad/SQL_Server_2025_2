@@ -11,13 +11,19 @@
 ### 1.1 Tạo Database
 <img width="1912" height="1079" alt="image" src="https://github.com/user-attachments/assets/99bb6f75-a38b-4947-8138-2aa2742619a1" />
 
+Hình ảnh tạo **Database** thành công
+
 ## 1.2 Tạo 3 bảng có quan hệ với nhau
 <img width="1917" height="1072" alt="image" src="https://github.com/user-attachments/assets/840fb15e-0c10-467f-8259-55240565558d" />
+
+Hình ảnh này đáp ứng đúng yêu cầu đề bài
 
 ## Phần 2: XÂY DỰNG FUNCTION
 
 ## 2.1 Hãy cho biết trong SQL Server có những loại function bild_in (hàm có sẵn):
 <img width="1915" height="1070" alt="image" src="https://github.com/user-attachments/assets/c9ade0a4-8f90-4200-8a9f-b5350e6b357e" />
+
+Hình ảnh cho thấy những hàm function
 
 ## 2.2 Hàm do người dùng tự viết trong SQL thường mang mục đích gì? 
 
@@ -54,28 +60,28 @@
 ## 3.1 Một số SP trong SQL có sẵn: Một số SP có sẵn trong SQL và ví dụ SP, giải thích những SP đó
 <img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/fd2cd669-a1d5-4388-94f0-b34bf37656f4" />
 
-`Đây là một số SP và ví dụ có giải thích`
+Hình ảnh này là một số SP và ví dụ có giải thích
 
 ## 3.2 Stored Procedure đơn giản để thực hiện các lệnh sau: `INSERT`, `UPDATE` và kiểm tra điều kiện
 
 <img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/1a0e3702-5054-4453-b5a4-8b805ea8d2ed" />
 
-`Hình ảnh dùng lệnh INSERT để thực hiện thêm dữ liệu vào bảng`
+Hình ảnh dùng lệnh INSERT để thực hiện thêm dữ liệu vào bảng
  
 ## 3.3 Stored procedure sử dụng tham số `OUTPUT`: Tính tổng tiền phạt của độc giả
 
 <img width="1916" height="1077" alt="image" src="https://github.com/user-attachments/assets/da651677-334d-4d64-811f-9996c94db748" />
 
-`Hình ảnh dùng tham số OUTPUT để tính tổng tiền phạt của người mượn sách`
+Hình ảnh dùng tham số OUTPUT để tính tổng tiền phạt của người mượn sách
 ## 3.4 Stored Procedure trả về Result Set: Báo cáo mượn sách
 
 <img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/ae37c652-f0ec-40d0-8ab4-e10994e5e6f6" />
 
-`Hình ảnh dòng code`
+Hình ảnh dòng code
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/66e7e2ba-758b-472e-bfcd-cd565b0c988b" />
 
-`Hình ảnh kết quả chạy của dòng code trên`
+Hình ảnh kết quả chạy của dòng code trên
 
 ## Phần 4: TRIGGER VÀ XỬ LÝ LOGIC NGHIỆP VỤ
 
@@ -83,37 +89,46 @@
 
 <img width="1910" height="1078" alt="image" src="https://github.com/user-attachments/assets/14a00fd0-e595-4c70-b56b-4454dddeef3c" />
 
-`Hình ảnh code`
+Hình ảnh code
 
 <img width="1918" height="1079" alt="image" src="https://github.com/user-attachments/assets/b00bd64a-d28a-45ba-8cef-f10a34edf72a" />
 
-`Hình ảnh kết quả trước khi mượn sách`
+Hình ảnh kết quả trước khi mượn sách
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/add04b53-5fa3-4096-840d-7ee31f07103b" />
 
-`Hình ảnh kết quả, số lượng sách ban đầu bảng A thay đổi dữ liệu bảng A, trigger tự động ở bảng B là cho mượn 1 quyển sách thì số lượng bảng A thay đổi  `
+Hình ảnh kết quả, số lượng sách ban đầu bảng A thay đổi dữ liệu bảng A, trigger tự động ở bảng B là cho mượn 1 quyển sách thì số lượng bảng A thay đổi 
 
-## 4.2 Viết Trigger cho bảng A:(sửa)
+## 4.2 Viết Trigger cho bảng A và bảng B: Thử nghiệm  Trigger vòng lặp (A -> B -> A)
 
-<img width="1919" height="1078" alt="image" src="https://github.com/user-attachments/assets/6c2f5e41-8962-4e97-b2a7-a9f4a965051d" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/64bfd1fb-4e8b-4773-81e1-47e733e65f3f" />
 
-  `Thêm cột tổng lần mượn vào bảng DocGia đã có sẵn`
+  Hình ảnh thêm cột tổng lần mượn và số sách đang mượn vào bảng **DocGia** đã có sẵn
 
-  <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/8ae658e2-72c9-4e0a-8140-9c288b6ab8d9" />
+ <img width="1919" height="1077" alt="image" src="https://github.com/user-attachments/assets/0e38c06f-1869-44e4-a230-243b92cdf241" />
 
-  `Cột `TongLanMuon` đã có trong bảng DocGia`
+  Cột **TongLanMuon** và **SoSachDangMuon** đã có trong bảng DocGia
 
 - Viết Trigger cho bảng A:
   
 <img width="1919" height="1075" alt="image" src="https://github.com/user-attachments/assets/b66e0daa-5d24-4a94-a9c1-feb3c40a9975" />
 
-`Hình ảnh code của Trigger A`
+Hình ảnh code của Trigger A
 
 - Viết Trigger cho bảng B:
 
 <img width="1915" height="1076" alt="image" src="https://github.com/user-attachments/assets/ef0a0adb-5676-4676-8b01-32fb55ebdfe1" />
 
-`Hình ảnh code của Trigger B`
+Hình ảnh code của Trigger B
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/ab1618e6-91f0-4d72-b412-4d1a1992a17d" />
+
+
+Hình ảnh kết quả đã thực hiện yêu cầu nhập vào 1 dữ liệu **bảng A** cập nhật dữ liệu mới nhập **bảng A** sang **bảng B** và từ **bảng B** cập nhật dữ liệu sang **bảng A**
+
+Minh họa dễ hiểu từ trong kết quả hình ảnh: Nhập dữ liệu **MaDocGia 2002** bảng A cập nhật dữ liệu **MaDocGia 2002** sang  bảng B và từ bảng B sang bảng A (quy trình được thực hiện theo 1 vòng lặp)
+
+
 
 
 
