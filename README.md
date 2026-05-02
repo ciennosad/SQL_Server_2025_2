@@ -128,6 +128,26 @@ Hình ảnh kết quả đã thực hiện yêu cầu nhập vào 1 dữ liệu 
 
 Minh họa dễ hiểu từ trong kết quả hình ảnh: Nhập dữ liệu **MaDocGia 2002** bảng A cập nhật dữ liệu **MaDocGia 2002** sang  bảng B và từ bảng B sang bảng A (quy trình được thực hiện theo 1 vòng lặp)
 
+## Phần 5: CURSOR VÀ DUYỆT DỮ LIỆU
+
+## Phần 5.1 Dùng CURSOR: Gửi gmail nhắc nhở độc giả quá hạn trả sách
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/91e7c733-55ae-4af9-bf6e-c3d878dbfeea" />
+
+<img width="1914" height="1070" alt="image" src="https://github.com/user-attachments/assets/40284567-0e7a-40a8-8700-d697bdb631c2" />
+
+<img width="1919" height="1077" alt="image" src="https://github.com/user-attachments/assets/cc3143d2-8015-4a13-9ffa-0bda0ac048e1" />
+
+Hình ảnh code
+
+<img width="1919" height="1074" alt="image" src="https://github.com/user-attachments/assets/aef32c6f-a067-4ccd-8a28-3afe8d49ea4f" />
+
+Hình ảnh chứng mình thông báo cho những độc giả mượn sách mà sách đã quá hạn
+
+## Phần 5.2 Giải pháp khồng dùng CURSOR: So sánh khi dùng và không dùng CURSOR
+
+
+
 
 
 
