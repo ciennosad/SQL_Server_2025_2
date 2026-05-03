@@ -815,7 +815,10 @@ Hình ảnh code của Trigger A đã chạy thành công
 
 - Viết Trigger cho bảng B:
 
-  ```
+
+ ```
+
+
 
 IF OBJECT_ID('trg_MuonTra_Insert', 'TR') IS NOT NULL
     DROP TRIGGER [trg_MuonTra_Insert];
@@ -844,14 +847,25 @@ BEGIN
 END;
 GO
 
+
+
+
   ```
+
+
+
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/b74110b8-bf15-4bf3-ab08-f5eff62e3ddf" />
 
 
 Hình ảnh code của Trigger B đã chạy thành công
 
+
+
+
 ```
+
+
 -- Insert độc giả mới → trigger tự tạo phiếu mượn
 
 -- Xóa dữ liệu cũ 
@@ -889,10 +903,17 @@ WHERE [MaDocGia] = 2002;
 
 SELECT * FROM MuonTra WHERE MaDocGia = 2002;
 
+
+
+
 ```
+
+
 
 <img width="1915" height="1077" alt="image" src="https://github.com/user-attachments/assets/7c36ac5e-a6f2-47cb-aab5-a4f12282aa81" />
 
+
+**Nhận xét**
 
 Hình ảnh kết quả đã thực hiện yêu cầu nhập vào 1 dữ liệu **bảng A** cập nhật dữ liệu mới nhập **bảng A** sang **bảng B** và từ **bảng B** cập nhật dữ liệu sang **bảng A**
 
@@ -902,13 +923,101 @@ Minh họa dễ hiểu từ trong kết quả hình ảnh: Nhập dữ liệu **
 
 ## Phần 5.1 Dùng CURSOR: Gửi gmail nhắc nhở độc giả quá hạn trả sách
 
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/91e7c733-55ae-4af9-bf6e-c3d878dbfeea" />
 
-<img width="1914" height="1070" alt="image" src="https://github.com/user-attachments/assets/40284567-0e7a-40a8-8700-d697bdb631c2" />
 
-<img width="1919" height="1077" alt="image" src="https://github.com/user-attachments/assets/cc3143d2-8015-4a13-9ffa-0bda0ac048e1" />
 
-Hình ảnh code
+```
+
+
+
+---- Xóa dữ liệu cũ
+IF OBJECT_ID('usp_GuiNhacNhoQuaHan', 'P') IS NOT NULL
+    DROP PROCEDURE usp_GuiNhacNhoQuaHan;
+GO
+
+-- Duyệt từng lượt mượn quá hạn chưa trả "gửi email" 
+
+CREATE PROCEDURE [usp_GuiNhacNhoQuaHan]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @MaMuon INT, @HoTen NVARCHAR(100), @TenSach NVARCHAR(255), 
+            @HanTra DATETIME, @SoNgayTre INT;
+    
+    -- Khai báo CURSOR
+    DECLARE cur_QuaHan CURSOR LOCAL FORWARD_ONLY READ_ONLY
+    FOR
+    SELECT 
+        mt.[MaMuon], dg.[HoTen], s.[TenSach], mt.[HanTra],
+        DATEDIFF(DAY, mt.[HanTra], GETDATE()) AS [SoNgayTre]
+    FROM [MuonTra] mt
+    INNER JOIN [DocGia] dg ON mt.[MaDocGia] = dg.[MaDocGia]
+    INNER JOIN [Sach] s ON mt.[MaSach] = s.[MaSach]
+    WHERE mt.[NgayTraThucTe] IS NULL  -- Chưa trả
+      AND mt.[HanTra] < GETDATE();     -- Và quá hạn
+    
+    OPEN cur_QuaHan;
+    
+    FETCH NEXT FROM cur_QuaHan INTO @MaMuon, @HoTen, @TenSach, @HanTra, @SoNgayTre;
+    
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- "Gửi email" - thực tế là PRINT hoặc ghi log
+        PRINT N'📧 [NHẮC NHỞ] Mã mượn: ' + CAST(@MaMuon AS VARCHAR) +
+              N' | Độc giả: ' + @HoTen +
+              N' | Sách: ' + @TenSach +
+              N' | Quá hạn ' + CAST(@SoNgayTre AS VARCHAR) + N' ngày' +
+              N' | Hạn trả: ' + CONVERT(VARCHAR, @HanTra, 103);
+        
+        -- update bảng Log, gọi API gửi email thật...
+        
+        FETCH NEXT FROM cur_QuaHan INTO @MaMuon, @HoTen, @TenSach, @HanTra, @SoNgayTre;
+    END
+    
+    CLOSE cur_QuaHan;
+    DEALLOCATE cur_QuaHan;
+    
+    PRINT N'✓ Hoàn thành gửi nhắc nhở quá hạn';
+END;
+GO
+
+-- Thêm dữ liệu mẫu để kiểm tra sách mượn đã quá hạn
+-- 🔹 Thêm độc giả
+
+IF NOT EXISTS (SELECT 1 FROM DocGia WHERE MaDocGia = 103)
+INSERT INTO [DocGia] ([MaDocGia], [HoTen], [NgaySinh], [GioiTinh], [SoDienThoai], [Email])
+VALUES (103, N'Trần Thị C', '2003-08-20', N'Nữ', '0992963792', 'tranthiC83@email.com');
+
+-- Thêm lượt mượn quá hạn để kiểm tra
+DECLARE @NextMaMuon INT = 2001;
+-- Nếu MaMuon đã tồn tại thì tăng lên
+WHILE EXISTS (SELECT 1 FROM MuonTra WHERE MaMuon = @NextMaMuon)
+    SET @NextMaMuon = @NextMaMuon + 1;
+
+-- Xóa dữ liệu cũ
+DELETE FROM MuonTra WHERE MaMuon >= 2001;
+
+-- Insert 2 bản ghi (mỗi người 1 cuốn)
+INSERT INTO [MuonTra] ([MaMuon], [MaDocGia], [MaSach], [NgayMuon], [HanTra], [NgayTraThucTe])
+VALUES 
+(1003, 1003, 1, DATEADD(DAY, -20, GETDATE()), DATEADD(DAY, -6, GETDATE()), NULL),  
+(103, 103, 3, DATEADD(DAY, -25, GETDATE()), DATEADD(DAY, -11, GETDATE()), NULL);   
+PRINT N'✓ Đã thêm dữ liệu thành công';
+
+-- Chạy procedure 
+EXEC usp_GuiNhacNhoQuaHan;
+
+
+
+```
+
+
+
+<img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/c173c6b5-d78d-4a5e-b582-d3d733e85536" />
+
+
+Hình ảnh code đã chạy thành công và in ra kết quả
 
 <img width="1919" height="1074" alt="image" src="https://github.com/user-attachments/assets/aef32c6f-a067-4ccd-8a28-3afe8d49ea4f" />
 
@@ -917,45 +1026,123 @@ Hình ảnh chứng mình thông báo cho những độc giả mượn sách mà
 ## Phần 5.2 Giải pháp khồng dùng CURSOR: So sánh khi dùng và không dùng CURSOR
 
 
-```IF OBJECT_ID('usp_GuiNhacNhoQuaHan_SetBased', 'P') IS NOT NULL
-    DROP PROCEDURE usp_GuiNhacNhoQuaHan_SetBased;
-GO
 
-CREATE PROCEDURE [usp_GuiNhacNhoQuaHan_SetBased]
+
+```
+
+
+
+
+CREATE PROCEDURE [usp_GuiNhacNhoQuaHan_Cursor]
 AS
 BEGIN
     SET NOCOUNT ON;
     
+    DECLARE @MaMuon INT, @HoTen NVARCHAR(100), @TenSach NVARCHAR(255);
+    DECLARE @HanTra DATETIME, @SoNgayTre INT;
+    DECLARE @ThongBao NVARCHAR(500);
+    
+    -- Khai báo CURSOR
+    DECLARE cur_QuaHan CURSOR LOCAL FORWARD_ONLY READ_ONLY
+    FOR
     SELECT 
-        N'📧 [NHẮC NHỜ] Mã mượn: ' + CAST(mt.[MaMuon] AS VARCHAR(20)) +
-        N' | Độc giả: ' + dg.[HoTen] +
-        N' | Sách: ' + s.[TenSach] +
-        N' | Quá hạn ' + CAST(DATEDIFF(DAY, mt.[HanTra], GETDATE()) AS VARCHAR(10)) + N' ngày' +
-        N' | Hạn trả: ' + CONVERT(VARCHAR(10), mt.[HanTra], 103) AS [ThongBao]
+        mt.[MaMuon], 
+        dg.[HoTen], 
+        s.[TenSach], 
+        mt.[HanTra],
+        DATEDIFF(DAY, mt.[HanTra], GETDATE()) AS [SoNgayTre]
     FROM [MuonTra] mt
     INNER JOIN [DocGia] dg ON mt.[MaDocGia] = dg.[MaDocGia]
     INNER JOIN [Sach] s ON mt.[MaSach] = s.[MaSach]
-    WHERE mt.[NgayTraThucTe] IS NULL      
-      AND mt.[HanTra] < GETDATE();         
+    WHERE mt.[NgayTraThucTe] IS NULL  -- Chưa trả
+      AND mt.[HanTra] < GETDATE();     -- Quá hạn
     
-    PRINT N'✓ Hoàn thành (Set-based)';
+    OPEN cur_QuaHan;
+    
+    FETCH NEXT FROM cur_QuaHan INTO @MaMuon, @HoTen, @TenSach, @HanTra, @SoNgayTre;
+    
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Xử lý từng bản ghi
+        SET @ThongBao = N'📧 [NHẮC NHỞ] Mã mượn: ' + CAST(@MaMuon AS VARCHAR) +
+                       N' | Độc giả: ' + @HoTen +
+                       N' | Sách: ' + @TenSach +
+                       N' | Quá hạn ' + CAST(@SoNgayTre AS VARCHAR) + N' ngày' +
+                       N' | Hạn trả: ' + CONVERT(VARCHAR, @HanTra, 103);
+        
+        PRINT @ThongBao;
+        
+        -- Ở đây có thể gọi API gửi email thật
+        
+        FETCH NEXT FROM cur_QuaHan INTO @MaMuon, @HoTen, @TenSach, @HanTra, @SoNgayTre;
+    END
+    
+    CLOSE cur_QuaHan;
+    DEALLOCATE cur_QuaHan;
+    
+    PRINT N'✓ Hoàn thành gửi nhắc nhở quá hạn';
 END;
 GO
 
-PRINT N'✓ Đã tạo procedure usp_GuiNhacNhoQuaHan_SetBased thành công';
-
-INSERT INTO [MuonTra] ([MaMuon], [MaDocGia], [MaSach], [NgayMuon], [HanTra], [NgayTraThucTe])
-SELECT 2001, 101, 1, DATEADD(DAY, -20, GETDATE()), DATEADD(DAY, -6, GETDATE()), NULL
-WHERE NOT EXISTS (
-    SELECT 1 FROM MuonTra WHERE MaMuon = 2001
-);
-
-PRINT N'✓ Đã thêm dữ liệu tes'
-EXEC [usp_GuiNhacNhoQuaHan_SetBased];```
+-- cursor
+EXEC [usp_GuiNhacNhoQuaHan_Cursor];
 
 
 
+```
 
+
+<img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/de87703b-2d18-4961-b0a6-7e83027fe8b8" />
+
+
+Hình ảnh kết quả chạy thành công và in ra kết quả 
+
+
+## So sánh tốc độ giữa có dùng và không dùng CURSOR
+
+
+
+```
+
+SET NOCOUNT ON;
+
+-- Đo CURSOR
+DECLARE @Start DATETIME2 = SYSDATETIME();
+EXEC usp_GuiNhacNhoQuaHan;
+DECLARE @TimeCursor INT = DATEDIFF(MS, @Start, SYSDATETIME());
+
+-- Đo SET-BASED
+DECLARE @Start2 DATETIME2 = SYSDATETIME();
+EXEC usp_GuiNhacNhoQuaHan_SetBased;
+DECLARE @TimeSetBased INT = DATEDIFF(MS, @Start2, SYSDATETIME());
+
+-- Hiển thị kết quả trong Results
+SELECT 
+    N'⏱ CURSOR (5.1)' AS Method,
+    @TimeCursor AS TimeMS
+UNION ALL
+SELECT 
+    N'⏱ SET-BASED (5.2)',
+    @TimeSetBased;
+
+
+
+
+```
+
+
+Hình ảnh chứng minh giữa 2 kết quả của dùng và không dùng CURSOR 
+
+
+<img width="1919" height="1076" alt="image" src="https://github.com/user-attachments/assets/7b20526b-a05e-4baf-a4b4-db68dbcf58e0" />
+
+
+## 5.3 Bìa toán chỉ CURSOR mới giải quyết được còn SQL không giải quyết được
+
+- TÍnh lãi suất lũy tiến với bậc thang
+
+
+```
 
 
 
