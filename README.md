@@ -30,9 +30,12 @@ Bài tập này nhằm rèn luyện kỹ năng lập trình cơ sở dữ liệu
 Hình ảnh tạo **Database** thành công
 
 ## 1.2 Tạo 3 bảng có quan hệ với nhau
+
 - Bảng Sach: MaSach (PK), TenSach, TacGia, NamXuatBan (CHECK 1900-2100), SoLuong (CHECK >=0), GiaTien
-  
-```CREATE TABLE [Sach] (
+
+```
+
+   CREATE TABLE [Sach] (
     [MaSach] INT PRIMARY KEY,                        
     [TenSach] NVARCHAR(255) NOT NULL,                  
     [TacGia] NVARCHAR(100) NOT NULL,
@@ -44,17 +47,20 @@ Hình ảnh tạo **Database** thành công
     [NgayNhapKho] DATETIME DEFAULT GETDATE(),         
     [ConSauKhong] BIT DEFAULT 1                        
 );
-GO ```
+GO
+
+```
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/20257b4b-6682-41f0-baab-262a53360f0d" />
 
 
                          Hình ảnh đã tạo thàn công bảng sách
 
-- Bảng DocGia: Bảng DocGia: MaDocGia (PK), HoTen, NgaySinh, Email (UNIQUE), NgayDangKy (DEFAULT GETDATE()), TinhTrang.
+## Bảng DocGia: Bảng DocGia: MaDocGia (PK), HoTen, NgaySinh, Email (UNIQUE), NgayDangKy (DEFAULT GETDATE()), TinhTrang.
 
+```
 
-```CREATE TABLE [DocGia] (
+    CREATE TABLE [DocGia] (
     [MaDocGia] INT PRIMARY KEY,                       
     [HoTen] NVARCHAR(100) NOT NULL,
     [NgaySinh] DATE CHECK ([NgaySinh] <= GETDATE()),   
@@ -65,7 +71,9 @@ GO ```
     [NgayDangKy] DATETIME DEFAULT GETDATE(),
     [TinhTrang] BIT DEFAULT 1                          
 );
-GO ```
+GO 
+
+```
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/89d25350-187c-419a-8cb0-815a848e51f2" />
 
@@ -73,7 +81,8 @@ GO ```
 
 - Bảng MuonTra: MaMuon (PK, IDENTITY), MaDocGia (FK), MaSach (FK), NgayMuon, HanTra, NgayTra, TinhTrang (CHECK giá trị hợp lệ)
 
-```CREATE TABLE [MuonTra] (
+```
+    CREATE TABLE [MuonTra] (
     [MaMuon] INT PRIMARY KEY,                          
     [MaDocGia] INT NOT NULL,                          
     [MaSach] INT NOT NULL,                             
@@ -84,13 +93,16 @@ GO ```
     [TinhTrangSachKhiTra] NVARCHAR(50),
     [TienPhat] DECIMAL(10,3) DEFAULT 0 CHECK ([TienPhat] >= 0),  
     [GhiChu] NVARCHAR(500),
- ```
+
+
+```
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/a08c3553-e4d3-4503-83bf-1e16c38758c1" />
 
                     Đã tạo xong bảng mượn trả trong bảng lưu giữ thông tin của người dùng ngày mượn và ngày trả sách
 
 ```
+
 CREATE TABLE [Sach] (
     [MaSach] INT PRIMARY KEY,                        
     [TenSach] NVARCHAR(255) NOT NULL,                  
@@ -148,7 +160,10 @@ CREATE TABLE [MuonTra] (
     CONSTRAINT [CK_HanTra_Sau_NgayMuon] 
         CHECK ([HanTra] >= [NgayMuon])
 );
-GO ```
+GO 
+
+
+```
 
 <img width="1916" height="1077" alt="Screenshot 2026-04-29 220101" src="https://github.com/user-attachments/assets/55c38e1a-b54f-4c4f-8c6c-dafaa7c6352e" />
 
@@ -159,7 +174,10 @@ GO ```
 
 ## 2.1 Hãy cho biết trong SQL Server có những loại function bild_in (hàm có sẵn):
 
-```-- Một số System Functions:
+```
+
+-- Một số System Functions:
+
 
 -- 1. Hàm ngày tháng: GETDATE(), DATEADD(), DATEDIFF()
 SELECT GETDATE() AS [ThoiGianHienTai],
@@ -180,7 +198,10 @@ FROM [Sach] s LEFT JOIN [MuonTra] mt ON s.[MaSach] = mt.[MaSach];
 -- 4. Hàm hệ thống: SYSTEM_USER, DB_NAME(), OBJECT_ID()
 SELECT SYSTEM_USER AS [NguoiDung],
        DB_NAME() AS [TenDatabase],
-       OBJECT_ID(N'[Sach]') AS [ID_BangSach]; ```
+       OBJECT_ID(N'[Sach]') AS [ID_BangSach];
+
+
+```
 
 <img width="1915" height="1070" alt="image" src="https://github.com/user-attachments/assets/c9ade0a4-8f90-4200-8a9f-b5350e6b357e" />
 
@@ -210,7 +231,9 @@ Hình ảnh cho thấy những hàm function
 ## 2.3 Scalar Function: Tính tiền phạt (trễ hạn)
 - Trả về danh sách quyển sách đang được mượ bởi 1 độc giả mà chưa trả
 
-```IF OBJECT_ID(N'[dbo].[fn_SachDangMuon]', N'IF') IS NOT NULL
+```
+
+IF OBJECT_ID(N'[dbo].[fn_SachDangMuon]', N'IF') IS NOT NULL
     DROP FUNCTION [dbo].[fn_SachDangMuon];
 GO
 
@@ -258,7 +281,11 @@ SELECT * FROM dbo.MuonTra WHERE MaMuon = 2003;
 
 
 SELECT * FROM dbo.[fn_SachDangMuon](1003);
- ```
+
+
+```
+
+
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/93301e13-dc45-47bf-b637-6f878b7d5437" />
 
 
@@ -273,8 +300,9 @@ Hình ảnh cho thấy danh sách 1 độc giả  đang mượn chưa trả bị
 
 
 ```
-IF OBJECT_ID(N'[fn_TinhSoNgayQuaHan]', N'FN') IS NOT NULL
-    DROP FUNCTION [fn_TinhSoNgayQuaHan];
+
+IF OBJECT_ID(N'[dbo].[fn_TinhSoNgayQuaHan]', N'FN') IS NOT NULL
+    DROP FUNCTION [dbo].[fn_TinhSoNgayQuaHan];
 GO
 
 CREATE FUNCTION dbo.fn_TinhSoNgayQuaHan
@@ -300,43 +328,19 @@ BEGIN
     RETURN ISNULL(@NgayQuaHan, 0);
 END;
 GO
+
 ```
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/40f6d81f-fa00-4cad-b774-619c876bdb51" />
+
+
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/337d0a55-87b5-46ca-ad04-47890a558d6d" />
+
 
 Hình ảnh kết quả chạy thành công
 
-IF OBJECT_ID(N'[fn_TinhSoNgayQuaHan]', N'FN') IS NOT NULL
-    DROP FUNCTION [fn_TinhSoNgayQuaHan];
-GO
+```
 
-CREATE FUNCTION dbo.fn_TinhSoNgayQuaHan
-(
-    @MaMuon INT
-)
-RETURNS INT
-AS
-BEGIN
-    DECLARE @NgayQuaHan INT;
-    
-    SELECT @NgayQuaHan = 
-        CASE 
-            WHEN NgayTraThucTe IS NULL AND GETDATE() > HanTra 
-                THEN DATEDIFF(DAY, HanTra, GETDATE())
-            WHEN NgayTraThucTe IS NOT NULL AND NgayTraThucTe > HanTra 
-                THEN DATEDIFF(DAY, HanTra, NgayTraThucTe)
-            ELSE 0 
-        END
-    FROM dbo.MuonTra
-    WHERE MaMuon = @MaMuon;
-    
-    RETURN ISNULL(@NgayQuaHan, 0);
-END;
-GO
-
-
-
-
-```-- 1. Thêm độc giả Nguyễn Văn A
+-- 1. Thêm độc giả Nguyễn Văn A
 INSERT INTO dbo.DocGia (MaDocGia, HoTen, NgaySinh,GioiTinh, SoDienThoai, Email, DiaChi)
 VALUES (1003, N'Nguyễn Văn AA', N'2003-03-01','Nam', '0863957396',N'nguyenvana1@Gmail.com', N'Tích Lương-Thái Nguyên');
 
@@ -351,13 +355,18 @@ VALUES (2003, 1003, 1, '2026-04-01', '2026-04-15', NULL, 5,N'Hẹn Trả Trướ
 -- Xem dữ liệu vừa insert
 SELECT * FROM dbo.DocGia WHERE MaDocGia = 1003;
 SELECT * FROM dbo.Sach WHERE MaSach = 1;
-SELECT * FROM dbo.MuonTra WHERE MaMuon = 2003;```
+SELECT * FROM dbo.MuonTra WHERE MaMuon = 2003;
+
+```
+
 
 <img width="1918" height="1074" alt="image" src="https://github.com/user-attachments/assets/d27c4871-27f5-41e3-9722-7585b7948559" />
 
-Kết quả in ra thông tin của người mượn sách
+                  Kết quả in ra thông tin của người mượn sách
 
-```SELECT 
+```
+
+SELECT 
     mt.MaMuon,
     mt.MaDocGia,
     mt.MaSach,
@@ -365,29 +374,80 @@ Kết quả in ra thông tin của người mượn sách
     mt.HanTra,
     mt.NgayTraThucTe,
     mt.TienPhat,
-    
-    -- Gọi hàm để lấy số ngày quá hạn
     dbo.fn_TinhSoNgayQuaHan(mt.MaMuon) AS SoNgayQuaHan,
+    dbo.fn_TinhSoNgayQuaHan(mt.MaMuon) * 5000 AS TienPhatDuKien,
     
-    -- Tính tiền phạt (5.000 VNĐ/ngày)
-    dbo.fn_TinhSoNgayQuaHan(mt.MaMuon) * 5000 AS TienPhat
+    -- Tổng lần mượn của độc giả này
+    (SELECT COUNT(*) FROM dbo.MuonTra WHERE MaDocGia = mt.MaDocGia) AS TongLanMuon,
+    
+    -- Số sách đang mượn (chưa trả)
+    (SELECT COUNT(*) FROM dbo.MuonTra 
+     WHERE MaDocGia = mt.MaDocGia AND NgayTraThucTe IS NULL) AS SoSachDangMuon
 
 FROM dbo.MuonTra mt
-WHERE mt.MaMuon = 2003;   ```
+WHERE mt.MaMuon = 2003;
 
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/48ca24df-a845-4dc0-a0f5-441c63967a6d" />
+
+``
+
+<img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/5a6b4da5-866a-454e-a4c7-e65c42b6603f" />
+
 
 In ra thông tin quá hạn trả và bị phạt tiền
 
-<img width="1916" height="1078" alt="image" src="https://github.com/user-attachments/assets/7fef2fd3-abe6-463e-b57b-a0ec275e5873" />
+<img width="1919" height="1075" alt="image" src="https://github.com/user-attachments/assets/200722a8-364d-4542-b9b0-139b9bbc5b3b" />
+
 
 
 kết quả trả về dánh sách đang được mượn bởi 1 độc giả cụ thể
 
-<img width="1915" height="1079" alt="image" src="https://github.com/user-attachments/assets/e803f1f7-8a5c-4234-8367-cfd9783b259b" />
 
-## 2.5: Multi-statement Table-Valued Function: Thống kế mượn sách độc giả
+## 2.5: Multi-statement Table-Valued Function: Thống kế mượn sách của độc giả
+
+```
+
+-- Trả về bảng thống kê: tổng số lần mượn, sách đang mượn, tổng tiền phạt
+CREATE FUNCTION [fn_ThongKeDocGia]
+(
+    @MaDocGia INT
+)
+RETURNS @KetQua TABLE
+(
+    [MaDocGia] INT,
+    [HoTen] NVARCHAR(100),
+    [TongLanMuon] INT,
+    [DangMuon] INT,
+    [TongTienPhat] DECIMAL(12,3)
+)
+AS
+BEGIN
+    DECLARE @HoTen NVARCHAR(100);
+    DECLARE @TongLanMuon INT, @DangMuon INT, @TongPhat DECIMAL(12,3);
+    
+    SELECT @HoTen = [HoTen] FROM [DocGia] WHERE [MaDocGia] = @MaDocGia;
+    
+    SELECT 
+        @TongLanMuon = COUNT(*),
+        @DangMuon = SUM(CASE WHEN [NgayTraThucTe] IS NULL THEN 1 ELSE 0 END),
+        @TongPhat = ISNULL(SUM([TienPhat]), 0)
+    FROM [MuonTra]
+    WHERE [MaDocGia] = @MaDocGia;
+    
+  
+    INSERT INTO @KetQua
+    VALUES (@MaDocGia, @HoTen, @TongLanMuon, @DangMuon, @TongPhat);
+    
+    RETURN;
+END;
+GO
+
+SELECT * FROM dbo.[fn_ThongKeDocGia](101);
+
+```
+
 <img width="1918" height="1073" alt="image" src="https://github.com/user-attachments/assets/2fc1cd1c-8b8f-4ec8-8597-b1bb024837ef" />
+
+Hình ảnh kết quả in ra bảng mượn sách của độc giả
 
 ## Phần 3: XÂY DỰNG STORRED PROCEDURE
 
