@@ -10,6 +10,12 @@
 ## Giới Thiệu Chung
 
 Bài tập này nhằm rèn luyện kỹ năng lập trình cơ sở dữ liệu trên SQL Server thông qua 5 nội dung chính: thiết kế database, xây dựng function, store procedure, trigger và cursor. Tài liệu này trình bày logic cách làm từng phần để bạn hiểu bản chất và áp dụng linh hoạt.
+Trong thời đại công nghệ thông tin phát triển mạnh mẽ, việc quản lý thư viện hiệu quả là yếu tố then chốt để nâng cao chất lượng dịch vụ và đáp ứng nhu cầu ngày càng cao của người đọc. Một hệ thống quản lý thư viện hiện đại không chỉ đơn thuần là lưu trữ thông tin sách và độc giả, mà còn phải tự động hóa các quy trình nghiệp vụ phức tạp như:
+Quản lý mượn/trả sách với các quy tắc về thời hạn, phạt quá hạn
+Thống kê báo cáo về lượt mượn, sách phổ biến, độc giả tích cực
+Kiểm soát tồn kho và cảnh báo sách sắp hết
+Tính toán tự động tiền phạt, điểm tín nhiệm độc giả
+Gửi thông báo nhắc nhở trả sách đúng hạn
 
 ## Phần 1: THIẾT KẾ VÀ KHỞI TẠO CƠ SỞ DỮ LIỆU
 
