@@ -172,6 +172,13 @@ GO
 
 ## Phần 2: XÂY DỰNG FUNCTION
 
+- Mô tả cách làm:
+- Tìm hiểu system functions có sẵn
+- Viết 3 loại function:
+- Scalar Function (trả về 1 giá trị)
+- Inline Table-Valued Function (trả về bảng)
+- Multi-statement Table-Valued Function (xử lý phức tạp)
+
 ## 2.1 Hãy cho biết trong SQL Server có những loại function bild_in (hàm có sẵn):
 
 ```
@@ -450,6 +457,12 @@ SELECT * FROM dbo.[fn_ThongKeDocGia](101);
 Hình ảnh kết quả in ra bảng mượn sách của độc giả
 
 ## Phần 3: XÂY DỰNG STORRED PROCEDURE
+- Mô tả cách làm:
+- Tìm hiểu system stored procedures
+- Viết 3 loại SP:
+- SP đơn giản (INSERT/UPDATE)
+- SP có tham số OUTPUT
+- SP trả về result set
 
 ## 3.1 Một số SP trong SQL có sẵn: Một số SP có sẵn trong SQL và ví dụ SP, giải thích những SP đó
 
@@ -642,6 +655,9 @@ Hình ảnh dòng code
 Hình ảnh kết quả chạy của dòng code trên
 
 ## Phần 4: TRIGGER VÀ XỬ LÝ LOGIC NGHIỆP VỤ
+- Mô tả cách làm:
+- Viết Trigger tự động cập nhật khi dữ liệu thay đổi
+- Thử viết trigger 2 chiều và quan sát hiện tượng
 
 ## 4.1 Trigger tự động cập nhật: Cập nhật số lượng sách khi mượn/trả
 
@@ -920,6 +936,11 @@ Hình ảnh kết quả đã thực hiện yêu cầu nhập vào 1 dữ liệu 
 Minh họa dễ hiểu từ trong kết quả hình ảnh: Nhập dữ liệu **MaDocGia 2002** bảng A cập nhật dữ liệu **MaDocGia 2002** sang  bảng B và từ bảng B sang bảng A (quy trình được thực hiện theo 1 vòng lặp)
 
 ## Phần 5: CURSOR VÀ DUYỆT DỮ LIỆU
+
+- Mô tả cách làm:
+- Dùng CURSOR để duyệt từng bản ghi
+- Tìm cách giải quyết không dùng CURSOR và so sánh tốc độ
+- Tìm bài toán chỉ CURSOR mới giải quyết được
 
 ## Phần 5.1 Dùng CURSOR: Gửi gmail nhắc nhở độc giả quá hạn trả sách
 
