@@ -1139,18 +1139,317 @@ Hình ảnh chứng minh giữa 2 kết quả của dùng và không dùng CURSO
 
 ## 5.3 Bìa toán chỉ CURSOR mới giải quyết được còn SQL không giải quyết được
 
-- TÍnh lãi suất lũy tiến với bậc thang
+- TÍnh điểm tín nhiệm tích lũy cho độc giả : Mỗi độc giả có điểm tín nhiệm (credit score) bắt đầu từ 100 điểm. Điểm này thay đổi sau MỖI lần mượn/trả sách và phụ thuộc vào lịch sử trước đó.
+- Quy tắc tính điểm:
+Điểm khởi tạo: 100 điểm
+Trả đúng hạn: +5 điểm
+Trả muộn 1-3 ngày: -10 điểm
+Trả muộn 4-7 ngày: -20 điểm
+Trả muộn >7 ngày: -30 điểm
+Mất sách/hỏng sách: -50 điểm
+Nếu điểm < 0: Khóa thẻ độc giả
+Nếu điểm >= 150: Hạng Vàng (được mượn 10 sách thay vì 5)
+Nếu điểm >= 200: Hạng Kim Cương (được mượn 15 sách)
+
+
+
+```
+
+-- Thêm cột điểm vào bảng DocGia
+ALTER TABLE dbo.DocGia 
+ADD DiemTinNhiem INT DEFAULT 100,
+    HangThanhVien AS 
+        CASE 
+            WHEN DiemTinNhiem >= 200 THEN N'Kim Cương'
+            WHEN DiemTinNhiem >= 150 THEN N'Vàng'
+            ELSE N'Thường'
+        END PERSISTED,
+    BiKhoa BIT DEFAULT 0;
+GO
+
+
+```
+
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/511e64c1-a0b8-436f-8c1b-cac5961e8493" />
+
+Hình ảnh thêm cột vào bảng DocGia để tính điểm tín nhiệm
 
 
 ```
 
 
 
+CREATE PROCEDURE dbo.sp_CapNhatDiemTinNhiem_Cursor
+    @MaDocGiaCanCapNhat INT = NULL  -- NULL = cập nhật tất cả
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Biến lưu trạng thái
+    DECLARE @MaDocGia INT, @MaMuon INT, @HanTra DATETIME, 
+            @NgayTraThucTe DATETIME, @TinhTrangSachKhiTra NVARCHAR(50),
+            @SoNgayQuaHan INT, @DiemThayDoi INT, @DiemHienTai INT,
+            @TenDocGia NVARCHAR(100);
+    
+    -- Bảng tạm lưu kết quả để hiển thị
+    DECLARE @KetQua TABLE (
+        MaDocGia INT,
+        TenDocGia NVARCHAR(100),
+        SoLanCapNhat INT,
+        DiemCuoiCung INT,
+        HangThanhVien NVARCHAR(50),
+        BiKhoa BIT
+    );
+    
+    -- Cursor OUTER: Duyệt từng độc giả
+    DECLARE cur_DocGia CURSOR FOR
+    SELECT MaDocGia, HoTen 
+    FROM dbo.DocGia 
+    WHERE (@MaDocGiaCanCapNhat IS NULL OR MaDocGia = @MaDocGiaCanCapNhat)
+    ORDER BY MaDocGia;
+    
+    OPEN cur_DocGia;
+    FETCH NEXT FROM cur_DocGia INTO @MaDocGia, @TenDocGia;
+    
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Lấy điểm hiện tại của độc giả này
+        SELECT @DiemHienTai = ISNULL(DiemTinNhiem, 100)
+        FROM dbo.DocGia WHERE MaDocGia = @MaDocGia;
+        
+        -- Reset về 100 trước khi tính lại từ đầu
+        UPDATE dbo.DocGia SET DiemTinNhiem = 100, BiKhoa = 0
+        WHERE MaDocGia = @MaDocGia;
+        
+        -- Cursor INNER: Duyệt lịch sử mượn theo thứ tự thời gian
+        DECLARE cur_LichSuMuon CURSOR FOR
+        SELECT MaMuon, HanTra, NgayTraThucTe, TinhTrangSachKhiTra
+        FROM dbo.MuonTra
+        WHERE MaDocGia = @MaDocGia 
+          AND NgayTraThucTe IS NOT NULL  -- Chỉ tính phiếu đã trả
+        ORDER BY NgayTraThucTe ASC;  -- QUAN TRỌNG: Theo thứ tự thời gian!
+        
+        OPEN cur_LichSuMuon;
+        FETCH NEXT FROM cur_LichSuMuon INTO @MaMuon, @HanTra, @NgayTraThucTe, @TinhTrangSachKhiTra;
+        
+        DECLARE @SoLanXuLy INT = 0;
+        
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            -- Tính số ngày quá hạn
+            SET @SoNgayQuaHan = DATEDIFF(DAY, @HanTra, @NgayTraThucTe);
+            
+            -- Tính điểm thay đổi dựa trên tình trạng
+            IF @TinhTrangSachKhiTra = N'Mất sách' OR @TinhTrangSachKhiTra = N'Hỏng'
+                SET @DiemThayDoi = -50;
+            ELSE IF @SoNgayQuaHan <= 0
+                SET @DiemThayDoi = 5;  -- Trả đúng/sớm hạn
+            ELSE IF @SoNgayQuaHan BETWEEN 1 AND 3
+                SET @DiemThayDoi = -10;
+            ELSE IF @SoNgayQuaHan BETWEEN 4 AND 7
+                SET @DiemThayDoi = -20;
+            ELSE
+                SET @DiemThayDoi = -30;  -- Quá hạn > 7 ngày
+            
+            -- CẬP NHẬT ĐIỂM TÍCH LŨY (dựa vào điểm trước đó!)
+            SET @DiemHienTai = @DiemHienTai + @DiemThayDoi;
+            
+            -- Kiểm tra có bị khóa không
+            DECLARE @BiKhoaMoi BIT = CASE WHEN @DiemHienTai < 0 THEN 1 ELSE 0 END;
+            
+            -- Cập nhật vào database
+            UPDATE dbo.DocGia 
+            SET DiemTinNhiem = @DiemHienTai,
+                BiKhoa = @BiKhoaMoi
+            WHERE MaDocGia = @MaDocGia;
+            
+            SET @SoLanXuLy = @SoLanXuLy + 1;
+            
+            FETCH NEXT FROM cur_LichSuMuon INTO @MaMuon, @HanTra, @NgayTraThucTe, @TinhTrangSachKhiTra;
+        END
+        
+        CLOSE cur_LichSuMuon;
+        DEALLOCATE cur_LichSuMuon;
+        
+        -- Lưu kết quả vào bảng tạm
+        INSERT INTO @KetQua
+        SELECT MaDocGia, HoTen, @SoLanXuLy, DiemTinNhiem,
+               CASE 
+                   WHEN DiemTinNhiem >= 200 THEN N'Kim Cương'
+                   WHEN DiemTinNhiem >= 150 THEN N'Vàng'
+                   ELSE N'Thường'
+               END,
+               BiKhoa
+        FROM dbo.DocGia
+        WHERE MaDocGia = @MaDocGia;
+        
+        FETCH NEXT FROM cur_DocGia INTO @MaDocGia, @TenDocGia;
+    END
+    
+    CLOSE cur_DocGia;
+    DEALLOCATE cur_DocGia;
+    
+    -- Hiển thị kết quả
+    SELECT * FROM @KetQua ORDER BY DiemCuoiCung DESC;
+END;
+GO
 
 
 
+```
 
 
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/6a99a399-f077-4c29-96d1-6275b73dcab6" />
+
+
+Hình ảnh code xử lý dữ liệu bên trong để tính điểm tín nhiệm
+
+
+```
+
+
+IF OBJECT_ID('sp_CapNhatDiemTinNhiem_Cursor', 'P') IS NOT NULL
+    DROP PROCEDURE sp_CapNhatDiemTinNhiem_Cursor;
+GO
+
+
+
+CREATE PROCEDURE dbo.sp_CapNhatDiemTinNhiem_Cursor
+    @MaDocGiaCanCapNhat INT = NULL  -- NULL = cập nhật tất cả
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Biến lưu trạng thái
+    DECLARE @MaDocGia INT, @MaMuon INT, @HanTra DATETIME, 
+            @NgayTraThucTe DATETIME, @TinhTrangSachKhiTra NVARCHAR(50),
+            @SoNgayQuaHan INT, @DiemThayDoi INT, @DiemHienTai INT,
+            @TenDocGia NVARCHAR(100);
+    
+    -- Bảng tạm lưu kết quả để hiển thị
+    DECLARE @KetQua TABLE (
+        MaDocGia INT,
+        TenDocGia NVARCHAR(100),
+        SoLanCapNhat INT,
+        DiemCuoiCung INT,
+        HangThanhVien NVARCHAR(50),
+        BiKhoa BIT
+    );
+    
+    -- Cursor OUTER: Duyệt từng độc giả
+    DECLARE cur_DocGia CURSOR FOR
+    SELECT MaDocGia, HoTen 
+    FROM dbo.DocGia 
+    WHERE (@MaDocGiaCanCapNhat IS NULL OR MaDocGia = @MaDocGiaCanCapNhat)
+    ORDER BY MaDocGia;
+    
+    OPEN cur_DocGia;
+    FETCH NEXT FROM cur_DocGia INTO @MaDocGia, @TenDocGia;
+    
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Lấy điểm hiện tại của độc giả này
+        SELECT @DiemHienTai = ISNULL(DiemTinNhiem, 100)
+        FROM dbo.DocGia WHERE MaDocGia = @MaDocGia;
+        
+        -- Reset về 100 trước khi tính lại từ đầu
+        UPDATE dbo.DocGia SET DiemTinNhiem = 100, BiKhoa = 0
+        WHERE MaDocGia = @MaDocGia;
+        
+        -- Cursor INNER: Duyệt lịch sử mượn theo thứ tự thời gian
+        DECLARE cur_LichSuMuon CURSOR FOR
+        SELECT MaMuon, HanTra, NgayTraThucTe, TinhTrangSachKhiTra
+        FROM dbo.MuonTra
+        WHERE MaDocGia = @MaDocGia 
+          AND NgayTraThucTe IS NOT NULL  -- Chỉ tính phiếu đã trả
+        ORDER BY NgayTraThucTe ASC;  -- QUAN TRỌNG: Theo thứ tự thời gian
+        
+        OPEN cur_LichSuMuon;
+        FETCH NEXT FROM cur_LichSuMuon INTO @MaMuon, @HanTra, @NgayTraThucTe, @TinhTrangSachKhiTra;
+        
+        DECLARE @SoLanXuLy INT = 0;
+        
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            -- Tính số ngày quá hạn
+            SET @SoNgayQuaHan = DATEDIFF(DAY, @HanTra, @NgayTraThucTe);
+            
+            -- Tính điểm thay đổi dựa trên tình trạng
+            IF @TinhTrangSachKhiTra = N'Mất sách' OR @TinhTrangSachKhiTra = N'Hỏng'
+                SET @DiemThayDoi = -50;
+            ELSE IF @SoNgayQuaHan <= 0
+                SET @DiemThayDoi = 5;  
+            ELSE IF @SoNgayQuaHan BETWEEN 1 AND 3
+                SET @DiemThayDoi = -10;
+            ELSE IF @SoNgayQuaHan BETWEEN 4 AND 7
+                SET @DiemThayDoi = -20;
+            ELSE
+                SET @DiemThayDoi = -30;  
+            
+            -- CẬP NHẬT ĐIỂM TÍCH LŨY 
+            SET @DiemHienTai = @DiemHienTai + @DiemThayDoi;
+            
+            -- Kiểm tra có bị khóa không
+            DECLARE @BiKhoaMoi BIT = CASE WHEN @DiemHienTai < 0 THEN 1 ELSE 0 END;
+            
+            -- Cập nhật vào database
+            UPDATE dbo.DocGia 
+            SET DiemTinNhiem = @DiemHienTai,
+                BiKhoa = @BiKhoaMoi
+            WHERE MaDocGia = @MaDocGia;
+            
+            SET @SoLanXuLy = @SoLanXuLy + 1;
+            
+            FETCH NEXT FROM cur_LichSuMuon INTO @MaMuon, @HanTra, @NgayTraThucTe, @TinhTrangSachKhiTra;
+        END
+        
+        CLOSE cur_LichSuMuon;
+        DEALLOCATE cur_LichSuMuon;
+        
+        -- Lưu kết quả vào bảng tạm
+        INSERT INTO @KetQua
+        SELECT MaDocGia, HoTen, @SoLanXuLy, DiemTinNhiem,
+               CASE 
+                   WHEN DiemTinNhiem >= 200 THEN N'Kim Cương'
+                   WHEN DiemTinNhiem >= 150 THEN N'Vàng'
+                   ELSE N'Thường'
+               END,
+               BiKhoa
+        FROM dbo.DocGia
+        WHERE MaDocGia = @MaDocGia;
+        
+        FETCH NEXT FROM cur_DocGia INTO @MaDocGia, @TenDocGia;
+    END
+    
+    CLOSE cur_DocGia;
+    DEALLOCATE cur_DocGia;
+    
+    -- Hiển thị kết quả
+    SELECT * FROM @KetQua ORDER BY DiemCuoiCung DESC;
+END;
+GO
+
+INSERT INTO dbo.DocGia (MaDocGia, HoTen, NgaySinh,GioiTinh, SoDienThoai, Email, DiaChi)
+VALUES (1001, N'Nguyễn Văn AA', N'2003-03-01','Nam', '0864957396',N'nguyenvana11@Gmail.com', N'Tích Lương-Thái Nguyên');
+
+-- Thêm MaMuon vào danh sách cột và truyền giá trị cụ thể
+INSERT INTO dbo.MuonTra (MaMuon, MaDocGia, MaSach, NgayMuon, HanTra, NgayTraThucTe, TinhTrangSachKhiMuon, TinhTrangSachKhiTra)
+VALUES
+(1001, 1001, 1, '2026-01-01', '2026-01-10', '2026-01-08', N'Mượn', N'Trả đúng') 
+
+
+EXEC dbo.sp_CapNhatDiemTinNhiem_Cursor @MaDocGiaCanCapNhat = 1001;
+
+
+
+```
+
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/8483cd46-7155-482c-9fb0-e05e23c3963f" />
+
+
+Hình ảnh hiển thị kết quả đúng với yêu 
 
 
 
