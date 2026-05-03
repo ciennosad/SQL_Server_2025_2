@@ -1476,7 +1476,7 @@ EXEC dbo.sp_CapNhatDiemTinNhiem_Cursor @MaDocGiaCanCapNhat = 1001;
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/8483cd46-7155-482c-9fb0-e05e23c3963f" />
 
 
-Hình ảnh hiển thị kết quả đúng với yêu 
+Hình ảnh hiển thị kết quả đúng với yêu cầu
 
 
 
