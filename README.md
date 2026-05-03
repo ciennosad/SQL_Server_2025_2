@@ -388,7 +388,7 @@ FROM dbo.MuonTra mt
 WHERE mt.MaMuon = 2003;
 
 
-``
+```
 
 <img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/5a6b4da5-866a-454e-a4c7-e65c42b6603f" />
 
@@ -396,7 +396,6 @@ WHERE mt.MaMuon = 2003;
 In ra thông tin quá hạn trả và bị phạt tiền
 
 <img width="1919" height="1075" alt="image" src="https://github.com/user-attachments/assets/200722a8-364d-4542-b9b0-139b9bbc5b3b" />
-
 
 
 kết quả trả về dánh sách đang được mượn bởi 1 độc giả cụ thể
@@ -443,6 +442,7 @@ GO
 
 SELECT * FROM dbo.[fn_ThongKeDocGia](101);
 
+
 ```
 
 <img width="1918" height="1073" alt="image" src="https://github.com/user-attachments/assets/2fc1cd1c-8b8f-4ec8-8597-b1bb024837ef" />
@@ -452,11 +452,103 @@ Hình ảnh kết quả in ra bảng mượn sách của độc giả
 ## Phần 3: XÂY DỰNG STORRED PROCEDURE
 
 ## 3.1 Một số SP trong SQL có sẵn: Một số SP có sẵn trong SQL và ví dụ SP, giải thích những SP đó
+
+```
+-- Một số System SP thường dùng:
+
+-- 1. sp_help: Xem cấu trúc đối tượng
+EXEC sp_help N'[Sach]';
+EXEC sp_help N'[DocGia]';
+EXEC sp_help N'[MuonTra]';
+
+-- 2. sp_tables: Liệt kê bảng trong DB hiện tại
+EXEC sp_tables;
+
+-- 3. sp_helpconstraint: Xem ràng buộc của bảng
+EXEC sp_helpconstraint N'[MuonTra]';
+
+-- 4. sp_who2: Xem session đang chạy
+EXEC sp_who2;
+
+-- 5. sp_spaceused: Xem dung lượng bảng
+EXEC sp_spaceused N'[Sach]';
+
+```
+
+
 <img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/fd2cd669-a1d5-4388-94f0-b34bf37656f4" />
 
 Hình ảnh này là một số SP và ví dụ có giải thích
 
 ## 3.2 Stored Procedure đơn giản để thực hiện các lệnh sau: `INSERT`, `UPDATE` và kiểm tra điều kiện
+
+
+```
+
+-- Thêm sách mới, kiểm tra: tên không trùng, năm/năm hợp lệ, số lượng ≥ 0
+CREATE PROCEDURE [usp_ThemSach]
+    @MaSach INT,
+    @TenSach NVARCHAR(255),
+    @TacGia NVARCHAR(100),
+    @NhaXuatBan NVARCHAR(150) = NULL,
+    @NamXuatBan INT,
+    @SoLuong INT,
+    @GiaTien DECIMAL(12,3),
+    @TheLoai NVARCHAR(50) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Kiểm tra mã sách đã tồn tại
+    IF EXISTS (SELECT 1 FROM [Sach] WHERE [MaSach] = @MaSach)
+    BEGIN
+        RAISERROR(N'Lỗi: Mã sách %d đã tồn tại!', 16, 1, @MaSach);
+        RETURN -1;
+    END
+    
+    -- Kiểm tra năm xuất bản
+    IF @NamXuatBan < 1900 OR @NamXuatBan > 2100
+    BEGIN
+        RAISERROR(N'Lỗi: Năm xuất bản không hợp lệ (1900-2100)!', 16, 1);
+        RETURN -2;
+    END
+    
+    -- Kiểm tra số lượng và giá
+    IF @SoLuong < 0 OR @GiaTien < 0
+    BEGIN
+        RAISERROR(N'Lỗi: Số lượng và giá tiền phải ≥ 0!', 16, 1);
+        RETURN -3;
+    END
+    
+    -- Insert thành công
+    INSERT INTO [Sach] ([MaSach], [TenSach], [TacGia], [NhaXuatBan], 
+                        [NamXuatBan], [SoLuong], [GiaTien], [TheLoai])
+    VALUES (@MaSach, @TenSach, @TacGia, @NhaXuatBan, 
+            @NamXuatBan, @SoLuong, @GiaTien, @TheLoai);
+    
+    PRINT N'✓ Thêm sách thành công: ' + @TenSach;
+    RETURN 0;
+END;
+GO
+
+-- Test SP:
+EXEC [usp_ThemSach] 
+    @MaSach = 3,
+    @TenSach = N'Tuổi Đáng Giá Bao Nhiêu',
+    @TacGia = N'Rosie NGuyễn',
+    @NamXuatBan = 1995,
+    @SoLuong = 10,
+    @GiaTien = 199.000;
+
+EXEC [usp_ThemSach] 
+    @MaSach = 4,
+    @TenSach = N'Lập Trình C++',
+    @TacGia = N'Phạm Văn Ất, Lê Trường Thông',
+    @NamXuatBan = 2017,
+    @SoLuong = 6,
+    @GiaTien = 149.000;
+
+```
 
 <img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/1a0e3702-5054-4453-b5a4-8b805ea8d2ed" />
 
@@ -464,10 +556,82 @@ Hình ảnh dùng lệnh INSERT để thực hiện thêm dữ liệu vào bản
  
 ## 3.3 Stored procedure sử dụng tham số `OUTPUT`: Tính tổng tiền phạt của độc giả
 
+
+```
+-- Tính tổng tiền phạt, trả về qua tham số OUTPUT
+CREATE PROCEDURE [usp_TinhTongPhatDocGia]
+    @MaDocGia INT,
+    @TongPhat DECIMAL(12,3) OUTPUT,
+    @SoLuotTre INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        @TongPhat = ISNULL(SUM([TienPhat]), 0),
+        @SoLuotTre = SUM(CASE WHEN [TienPhat] > 0 THEN 1 ELSE 0 END)
+    FROM [MuonTra]
+    WHERE [MaDocGia] = @MaDocGia;
+    
+    PRINT N'Tổng phạt: ' + CAST(@TongPhat AS VARCHAR) + 
+          N' VNĐ, Số lượt trễ: ' + CAST(@SoLuotTre AS VARCHAR);
+END;
+GO
+
+-- Test SP với OUTPUT:
+DECLARE @Phat DECIMAL(12,3), @Tre INT;
+EXEC [usp_TinhTongPhatDocGia] @MaDocGia = 101, 
+                               @TongPhat = @Phat OUTPUT, 
+                               @SoLuotTre = @Tre OUTPUT;
+SELECT @Phat AS [TongTienPhat], @Tre AS [SoLanTreHan];
+
+```
+
 <img width="1916" height="1077" alt="image" src="https://github.com/user-attachments/assets/da651677-334d-4d64-811f-9996c94db748" />
 
 Hình ảnh dùng tham số OUTPUT để tính tổng tiền phạt của người mượn sách
 ## 3.4 Stored Procedure trả về Result Set: Báo cáo mượn sách
+
+
+```
+-- Join 3 bảng, trả về báo cáo mượn sách đầy đủ thông tin
+CREATE PROCEDURE [usp_BaoCaoMuonSach]
+    @TuNgay DATETIME = NULL,
+    @DenNgay DATETIME = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        mt.[MaMuon],
+        dg.[HoTen] AS [TenDocGia],
+        s.[TenSach],
+        s.[TacGia],
+        mt.[NgayMuon],
+        mt.[HanTra],
+        ISNULL(CONVERT(NVARCHAR(50), mt.[NgayTraThucTe], 23), N'Chưa trả') AS [NgayTra],
+        CASE 
+            WHEN mt.[NgayTraThucTe] IS NULL AND GETDATE() > mt.[HanTra] 
+            THEN N'Quá hạn'
+            WHEN mt.[NgayTraThucTe] IS NULL THEN N'Đang mượn'
+            WHEN mt.[NgayTraThucTe] > mt.[HanTra] THEN N'Trả muộn'
+            ELSE N'Trả đúng hạn'
+        END AS [TrangThai],
+        mt.[TienPhat]
+    FROM [MuonTra] mt
+    INNER JOIN [DocGia] dg ON mt.[MaDocGia] = dg.[MaDocGia]
+    INNER JOIN [Sach] s ON mt.[MaSach] = s.[MaSach]
+    WHERE (@TuNgay IS NULL OR mt.[NgayMuon] >= @TuNgay)
+      AND (@DenNgay IS NULL OR mt.[NgayMuon] <= @DenNgay)
+    ORDER BY mt.[NgayMuon] DESC;
+END;
+GO
+
+--  Test SP:
+EXEC [usp_BaoCaoMuonSach]; 
+EXEC [usp_BaoCaoMuonSach] @TuNgay = '2024-01-01';  
+
+```
 
 <img width="1917" height="1079" alt="image" src="https://github.com/user-attachments/assets/ae37c652-f0ec-40d0-8ab4-e10994e5e6f6" />
 
@@ -480,6 +644,93 @@ Hình ảnh kết quả chạy của dòng code trên
 ## Phần 4: TRIGGER VÀ XỬ LÝ LOGIC NGHIỆP VỤ
 
 ## 4.1 Trigger tự động cập nhật: Cập nhật số lượng sách khi mượn/trả
+
+```
+
+-- TRIGGER: trg_CapNhatSoLuong_Sach
+-- Mục đích: Tự động cập nhật số lượng sách khi mượn/trả
+
+IF OBJECT_ID('trg_CapNhatSoLuong_Sach', 'TR') IS NOT NULL
+BEGIN
+    DROP TRIGGER [trg_CapNhatSoLuong_Sach];
+    PRINT N'/ Đã xóa trigger cũ trg_CapNhatSoLuong_Sach';
+END
+GO
+
+CREATE TRIGGER [trg_CapNhatSoLuong_Sach]
+ON [MuonTra]
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- INSERT mới (mượn sách)
+    IF EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
+    BEGIN
+        -- Kiểm tra đủ sách trước khi cho mượn
+        IF EXISTS (
+            SELECT 1 
+            FROM inserted i
+            INNER JOIN [Sach] s ON i.[MaSach] = s.[MaSach]
+            WHERE s.[SoLuong] <= 0
+        )
+        BEGIN
+            RAISERROR(N'Lỗi: Sách này đã hết số lượng để mượn!', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        -- Giảm số lượng sách
+        UPDATE s
+        SET [SoLuong] = s.[SoLuong] - 1,
+            [ConSauKhong] = CASE WHEN s.[SoLuong] - 1 <= 0 THEN 0 ELSE 1 END
+        FROM [Sach] s
+        INNER JOIN inserted i ON s.[MaSach] = i.[MaSach];
+        
+        PRINT N'✓ Đã giảm số lượng sách khi mượn';
+    END
+    
+    --  UPDATE (trả sách - khi NgayTraThucTe được cập nhật)
+    IF EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted)
+    BEGIN
+       
+        IF UPDATE([NgayTraThucTe])
+        BEGIN
+            UPDATE s
+            SET [SoLuong] = s.[SoLuong] + 1,
+                [ConSauKhong] = 1
+            FROM [Sach] s
+            INNER JOIN inserted i ON s.[MaSach] = i.[MaSach]
+            INNER JOIN deleted d ON i.[MaMuon] = d.[MaMuon]
+            WHERE d.[NgayTraThucTe] IS NULL   
+              AND i.[NgayTraThucTe] IS NOT NULL; 
+            
+            PRINT N'✓ Đã tăng số lượng sách khi trả';
+        END
+    END
+END;
+GO
+
+
+-- Xem số lượng sách ban đầu là bảng A
+SELECT [MaSach], [TenSach], [SoLuong], [ConSauKhong] 
+FROM [Sach] WHERE [MaSach] = 3;
+
+-- Cho mượn sách là bảng B
+INSERT INTO [MuonTra] ([MaMuon], [MaDocGia], [MaSach], [HanTra])
+VALUES (2003, 101, 3, DATEADD(DAY, 14, GETDATE()));
+
+
+-- Kiểm tra lại  số lượng sách bảng B đã cho  mượn 1 quyển sách
+SELECT [MaSach], [TenSach], [SoLuong], [ConSauKhong] 
+FROM [Sach] WHERE [MaSach] = 3;
+
+-- kiểm tra dữ liệu đã thay  đổi ở bảng  A
+SELECT [MaSach], [TenSach], [SoLuong], [ConSauKhong] 
+FROM [Sach] WHERE [MaSach] = 3;
+
+```
+
 
 <img width="1910" height="1078" alt="image" src="https://github.com/user-attachments/assets/14a00fd0-e595-4c70-b56b-4454dddeef3c" />
 
@@ -494,6 +745,8 @@ Hình ảnh kết quả trước khi mượn sách
 Hình ảnh kết quả, số lượng sách ban đầu bảng A thay đổi dữ liệu bảng A, trigger tự động ở bảng B là cho mượn 1 quyển sách thì số lượng bảng A thay đổi 
 
 ## 4.2 Viết Trigger cho bảng A và bảng B: Thử nghiệm  Trigger vòng lặp (A -> B -> A)
+
+
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/64bfd1fb-4e8b-4773-81e1-47e733e65f3f" />
 
